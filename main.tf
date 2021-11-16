@@ -107,11 +107,9 @@ resource "google_sql_database_instance" "mysql_read_replica" {
     activation_policy = "ALWAYS"
 
     ip_configuration {
-      content {
-        ipv4_enabled    = false
-        private_network = module.network.network_self_link
-        require_ssl     = false
-      }
+      ipv4_enabled    = false
+      private_network = module.network.network_self_link
+      require_ssl     = false
     }
 
     disk_autoresize = true
