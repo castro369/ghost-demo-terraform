@@ -76,7 +76,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="./terraform-sa.json"
 gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
-    --branch-pattern=$BRANCH_PATTERN \
+    --branch-pattern=".*" \
     --build-config=cloudbuild_triggers/tf-plan.yaml \
     --name tf-plan
 
@@ -84,8 +84,24 @@ gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
     --pull-request-pattern=$BRANCH_PATTERN \ 
+    --build-config=cloudbuild_triggers/tf-pr.yaml \
+    --name tf-pr
+
+gcloud beta builds triggers create github \
+    --repo-name=$REPO_NAME \
+    --repo-owner=$REPO_OWNER \
+    --pull-request-pattern=$BRANCH_PATTERN \
+    --require-approval \ 
     --build-config=cloudbuild_triggers/tf-apply.yaml \
     --name tf-apply
+
+
+
+
+
+
+
+    
 
 
 
