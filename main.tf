@@ -295,7 +295,7 @@ module "cloud_run" {
 
 
   depends_on = [
-    null_resource.docker_build
+    google_secret_manager_secret_version.secret_version_connection_socket
   ]
 }
 
@@ -465,19 +465,6 @@ resource "google_secret_manager_secret_version" "secret_version_service_name" {
   lifecycle {
     ignore_changes = all
   }
-}
-
-# Null Resource to push image to GCR
-resource "null_resource" "docker_build" {
-
-  provisioner "local-exec" {
-    working_dir = path.module
-    command     = "gcloud builds submit --config cloudbuild.yaml ."
-  }
-
-  depends_on = [
-    google_secret_manager_secret_version.secret_version_connection_socket
-  ]
 }
 
 # Cloud Build Trigger CICD
