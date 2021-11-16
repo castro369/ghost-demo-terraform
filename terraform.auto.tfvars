@@ -1,4 +1,4 @@
-project_id = "test-mine-as"
+project_id = "my-new-332320"
 region     = "europe-west1"
 zone       = "europe-west1-b"
 
