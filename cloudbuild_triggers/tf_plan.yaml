@@ -32,5 +32,5 @@ artifacts:
     paths: ["planfile-$COMMIT_SHA"]
 availableSecrets:
   secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/$_GOOGLE_CREDENTIALS/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/GOOGLE_CREDENTIALS/versions/latest
       env: "GOOGLE_CREDENTIALS"
