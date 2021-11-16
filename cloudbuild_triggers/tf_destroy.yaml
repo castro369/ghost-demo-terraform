@@ -1,14 +1,4 @@
 steps:
-  - id: get_terraform_plan
-    name: gcr.io/cloud-builders/gsutil
-    args:
-      [
-        "cp",
-        "gs://${PROJECT_ID}-terraform-planfiles/planfile-$COMMIT_SHA",
-        "planfile",
-      ]
-    waitFor: ["-"]
-
   - id: terraform_init
     env:
       - TF_IN_AUTOMATION=true
@@ -26,7 +16,7 @@ steps:
     env:
       - TF_IN_AUTOMATION=true
     name: hashicorp/terraform:1.0.11
-    args: ["destroy", "-parallelism", "2", "planfile"]
+    args: ["destroy"]
     timeout: 3600s
     secretEnv: ["GOOGLE_CREDENTIALS"]
 
@@ -36,5 +26,3 @@ availableSecrets:
     - versionName: projects/$PROJECT_ID/secrets/GOOGLE_CREDENTIALS/versions/latest
       env: "GOOGLE_CREDENTIALS"
 timeout: 3600s
-# options:
-#   machineType: "E2_HIGHCPU_32"
