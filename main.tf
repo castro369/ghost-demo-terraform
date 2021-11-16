@@ -295,7 +295,7 @@ module "cloud_run" {
 
 
   depends_on = [
-    null_resource.docker_build
+    google_secret_manager_secret_version.secret_version_connection_socket
   ]
 }
 
