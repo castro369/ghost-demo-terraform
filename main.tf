@@ -121,7 +121,7 @@ resource "google_sql_database_instance" "mysql_read_replica" {
     user_labels     = null
 
     location_preference {
-      zone = lookup(each.value, "zone", var.zone)
+      zone = var.zone
     }
 
   }
