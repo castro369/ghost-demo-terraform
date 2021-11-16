@@ -16,7 +16,7 @@ steps:
     env:
       - TF_IN_AUTOMATION=true
     name: hashicorp/terraform:1.0.11
-    args: ["destroy"]
+    args: ["destroy", "--auto-approve"]
     timeout: 3600s
     secretEnv: ["GOOGLE_CREDENTIALS"]
 
