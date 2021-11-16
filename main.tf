@@ -49,18 +49,46 @@ module "mysql_db" {
   maintenance_window_day  = 6
   maintenance_window_hour = 2
   encryption_key_name     = null
+  maintenance_window_update_track = "stable"
 
   deletion_protection = var.db_deletion_protection
+
+  ip_configuration = {
+    ipv4_enabled        = false
+    require_ssl         = false
+    private_network     = module.network.network_self_link
+    authorized_networks = []
+  }
 
   backup_configuration = {
     "binary_log_enabled" : true,
     "enabled" : true,
     "location" : "eu",
-    "retained_backups" : 7,
+    "retained_backups" : 365,
     "retention_unit" : "COUNT",
     "start_time" : "02:00",
     "transaction_log_retention_days" : "7"
   }
+
+  read_replicas = [
+    {
+      name           = "0"
+      zone           = var.read_replica_zone
+      tier           = var.db_tier
+      database_flags = []
+      ip_configuration = {
+        ipv4_enabled        = false
+        private_network     = module.network.network_self_link
+        require_ssl         = false
+        authorized_networks = []
+      }
+      disk_autoresize     = true
+      disk_size           = "10"
+      disk_type           = "PD_SSD"
+      user_labels         = null
+      encryption_key_name = null
+    }
+  ]
 
   additional_databases = [
     { name = var.db_database_name, charset = "utf8mb4", collation = "utf8mb4_general_ci" }
@@ -75,71 +103,11 @@ module "mysql_db" {
     }
   ]
 
-  ip_configuration = {
-    ipv4_enabled        = false
-    require_ssl         = false
-    private_network     = module.network.network_self_link
-    authorized_networks = []
-  }
-
-  read_replicas = [
-    {
-      name           = "r-${random_id.suffix.hex}"
-      tier           = var.db_tier
-      zone           = var.read_replica_zone
-      database_flags = []
-      ip_configuration = {
-        ipv4_enabled        = false
-        private_network     = module.network.network_id
-        require_ssl         = false
-        authorized_networks = []
-      }
-      disk_autoresize     = true
-      disk_size           = "10"
-      disk_type           = "PD_SSD"
-      user_labels         = null
-      encryption_key_name = null
-    }
-  ]
-
   module_depends_on = [
     google_service_networking_connection.cloud_sql_priv_serv_conn
   ]
 }
-/*
-resource "google_sql_database_instance" "mysql_sql_replica" {
-  name                 = "${module.mysql_db.instance_name}-replica"
-  region               = var.region
-  database_version     = var.database_version
-  master_instance_name = module.mysql_db.instance_name
 
-  replica_configuration {
-    # connect_retry_interval = "${lookup(var.replica, "retry_interval", "60")}"
-    failover_target = true
-  }
-
-  settings {
-    tier                   = var.db_tier
-    disk_type              = "PD_SSD"
-    disk_size              = "10"
-    disk_autoresize        = true
-    activation_policy      = "ALWAYS"
-    availability_type      = "REGIONAL"
-
-    location_preference {
-      zone = var.zone
-    }
-
-    /*
-    maintenance_window {
-      day          = 6
-      hour         = 2
-      update_track = "stable"
-    }
-   
-  }
-}
- */
 # SSL certificate
 resource "google_compute_ssl_certificate" "ssl_certificate" {
   name_prefix = "ssl-certificate-"
@@ -475,12 +443,7 @@ resource "google_secret_manager_secret_version" "secret_version_service_name" {
 
 # Null Resource to push image to GCR
 resource "null_resource" "docker_build" {
-  /*
-  triggers = {
-    always_run = timestamp()
 
-  }
-  */
   provisioner "local-exec" {
     working_dir = path.module
     command     = "gcloud builds submit --config ../cloudbuild.yaml ../"
