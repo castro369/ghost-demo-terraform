@@ -227,8 +227,9 @@ module "cloud_run" {
   template_annotations = {
     "autoscaling.knative.dev/maxScale"        = 100
     "autoscaling.knative.dev/minScale"        = 1
-    "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.serverless_connector.id
-    "run.googleapis.com/vpc-access-egress"    = "all-traffic"
+    "run.googleapis.com/vpc-access-connector" = module.mysql_db.instance_connection_name
+    "run.googleapis.com/execution-environment" = "gen1"
+    "run.googleapis.com/vpc-access-egress"    = "all-traffic" #private-ranges-only
   }
 
   limits = {
