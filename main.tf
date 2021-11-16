@@ -214,7 +214,7 @@ module "cloud_run" {
   service_name = var.cloud_run_service_name
   project_id   = var.project_id
   location     = var.region
-  image        = var.cloud_run_image
+  image        = "gcr.io/${var.project_id}/${var.cloud_run_image}"
   container_concurrency  = 80
 
   members = ["allUsers"]

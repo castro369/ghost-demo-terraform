@@ -1,4 +1,4 @@
-project_id = "drone-shuttles-ghost-dev"
+project_id = "test-mine-as"
 region     = "europe-west1"
 zone       = "europe-west1-b"
 
@@ -40,7 +40,7 @@ neg_name = "serverless-neg"
 
 # Cloud Run
 cloud_run_service_name    = "ci-cloud-run-ghost"
-cloud_run_image           = "gcr.io/drone-shuttles-ghost-dev/ghost"
+cloud_run_image           = "ghost"
 serverless_connector_name = "vpc-connector-cloud-run"
 
 # Secret Manager
