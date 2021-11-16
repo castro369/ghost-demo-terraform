@@ -8,12 +8,12 @@ terraform {
 
 provider "google" {
   project     = var.project_id
-  credentials = file("./terraform-sa.json")
+  #credentials = file("./terraform-sa.json")
 }
 
 provider "google-beta" {
   project     = var.project_id
-  credentials = file("./terraform-sa.json")
+  #credentials = file("./terraform-sa.json")
 }
 
 provider "null" {
