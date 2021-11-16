@@ -14,7 +14,7 @@ subnets = [
 ]
 
 # Cloud SQL
-db_name                             = "ghost-db"
+db_name                             = "ghost-mysql-db"
 db_random_instance_name             = false
 database_version                    = "MYSQL_5_7"
 db_tier                             = "db-n1-standard-1"
