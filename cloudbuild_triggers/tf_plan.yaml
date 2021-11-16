@@ -8,9 +8,9 @@ steps:
         "init",
         "-reconfigure",
         "-backend-config",
-        "bucket=${PROJECT_ID}-tfstate",
+        "bucket=${PROJECT_ID}-dev-tfstate",
       ]
-      secretEnv: ["GOOGLE_CREDENTIALS"]
+    secretEnv: ["GOOGLE_CREDENTIALS"]
 
   - id: terraform_validate
     env:
@@ -28,7 +28,7 @@ steps:
 
 artifacts:
   objects:
-    location: "gs://${PROJECT_ID}-terraform-planfiles"
+    location: "gs://${PROJECT_ID}-dev-terraform-planfiles"
     paths: ["planfile-$COMMIT_SHA"]
 availableSecrets:
   secretManager:

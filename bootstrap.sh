@@ -77,14 +77,14 @@ gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
     --branch-pattern=".*" \
-    --build-config=cloudbuild_triggers/tf-plan.yaml \
+    --build-config=cloudbuild_triggers/tf_plan.yaml \
     --name tf-plan
 
 gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
     --pull-request-pattern=$BRANCH_PATTERN \ 
-    --build-config=cloudbuild_triggers/tf-pr.yaml \
+    --build-config=cloudbuild_triggers/tf_pr.yaml \
     --name tf-pr
 
 gcloud beta builds triggers create github \
@@ -92,7 +92,7 @@ gcloud beta builds triggers create github \
     --repo-owner=$REPO_OWNER \
     --pull-request-pattern=$BRANCH_PATTERN \
     --require-approval \ 
-    --build-config=cloudbuild_triggers/tf-apply.yaml \
+    --build-config=cloudbuild_triggers/tf_apply.yaml \
     --name tf-apply
 
 
