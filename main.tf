@@ -70,26 +70,6 @@ module "mysql_db" {
     "transaction_log_retention_days" : "7"
   }
 
-  read_replicas = [
-    {
-      name           = "0"
-      zone           = var.read_replica_zone
-      tier           = var.db_tier
-      database_flags = []
-      ip_configuration = {
-        ipv4_enabled        = false
-        private_network     = module.network.network_self_link
-        require_ssl         = false
-        authorized_networks = []
-      }
-      disk_autoresize     = true
-      disk_size           = "10"
-      disk_type           = "PD_SSD"
-      user_labels         = null
-      encryption_key_name = null
-    }
-  ]
-
   additional_databases = [
     { name = var.db_database_name, charset = "utf8mb4", collation = "utf8mb4_general_ci" }
   ]
@@ -107,6 +87,54 @@ module "mysql_db" {
     google_service_networking_connection.cloud_sql_priv_serv_conn
   ]
 }
+
+resource "google_sql_database_instance" "mysql_read_replica" {
+  provider             = google-beta
+  project              = var.project_id
+  name                 = "${module.mysql_db.instance_name}-replica"
+  database_version     = var.database_version
+  region               = var.region
+  master_instance_name = module.mysql_db.instance_name
+  deletion_protection  = var.db_deletion_protection
+  encryption_key_name  = null
+
+  replica_configuration {
+    failover_target = false
+  }
+
+  settings {
+    tier              = var.db_tier
+    activation_policy = "ALWAYS"
+
+    ip_configuration {
+      content {
+        ipv4_enabled    = false
+        private_network = module.network.network_self_link
+        require_ssl     = false
+      }
+    }
+
+    disk_autoresize = true
+    disk_size       = "10"
+    disk_type       = "PD_SSD"
+    pricing_plan    = "PER_USE"
+    user_labels     = null
+
+    location_preference {
+      zone = lookup(each.value, "zone", var.zone)
+    }
+
+  }
+
+  depends_on = [module.mysql_db]
+  lifecycle {
+    ignore_changes = [
+      settings[0].disk_size,
+      settings[0].maintenance_window,
+    ]
+  }
+}
+
 
 # SSL certificate
 resource "google_compute_ssl_certificate" "ssl_certificate" {
