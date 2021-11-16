@@ -95,6 +95,14 @@ gcloud beta builds triggers create github \
     --build-config=cloudbuild_triggers/tf_apply.yaml \
     --name tf-apply
 
+gcloud beta builds triggers create github \
+    --repo-name=$REPO_NAME \
+    --repo-owner=$REPO_OWNER \
+    --pull-request-pattern=$BRANCH_PATTERN \
+    --require-approval \
+    --build-config=cloudbuild_triggers/tf_destroy.yaml \
+    --name tf-destroy
+
 # Build and push Ghost Image to GCR
 gcloud builds submit --config cloudbuild.yaml .
 
