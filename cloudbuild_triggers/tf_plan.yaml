@@ -1,0 +1,36 @@
+steps:
+  - id: terraform_init
+    env:
+      - TF_IN_AUTOMATION=true
+    name: "hashicorp/terraform:1.0.11"
+    args:
+      [
+        "init",
+        "-reconfigure",
+        "-backend-config",
+        "bucket=${PROJECT_ID}-tfstate",
+      ]
+      secretEnv: ["GOOGLE_CREDENTIALS"]
+
+  - id: terraform_validate
+    env:
+      - TF_IN_AUTOMATION=true
+    name: "hashicorp/terraform:1.0.11"
+    args: ["validate"]
+
+  - id: terraform_plan
+    env:
+      - TF_IN_AUTOMATION=true
+    name: "hashicorp/terraform:1.0.11"
+    args: ["plan", "-parallelism", "20", "-out", "planfile-$COMMIT_SHA"]
+    secretEnv:
+      ["GOOGLE_CREDENTIALS"]
+
+artifacts:
+  objects:
+    location: "gs://${PROJECT_ID}-terraform-planfiles"
+    paths: ["planfile-$COMMIT_SHA"]
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/$_GOOGLE_CREDENTIALS/versions/latest
+      env: "GOOGLE_CREDENTIALS"
