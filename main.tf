@@ -472,7 +472,7 @@ resource "null_resource" "docker_build" {
 
   provisioner "local-exec" {
     working_dir = path.module
-    command     = "gcloud builds submit --config ../cloudbuild.yaml ../"
+    command     = "gcloud builds submit --config cloudbuild.yaml ."
   }
 
   depends_on = [
