@@ -38,8 +38,6 @@ certificate = "certificates/certificate.pem"
 domain   = "acastro.xyz"
 neg_name = "serverless-neg"
 
-
-
 # Cloud Run
 cloud_run_service_name    = "ci-cloud-run-ghost"
 cloud_run_image           = "gcr.io/drone-shuttles-ghost-dev/ghost"
@@ -64,28 +62,3 @@ secrets = {
   }
 }
 
-
-
-
-/*
-
-# GCE Container
-container_image = "gcr.io/drone-shuttles-ghost-dev/ghost:latest"
-
-# Instance Template
-instance_template_service_account =  {
-    email  = ""
-    scopes = ["cloud-platform"]
-}
-instance_template_name_prefix = "ghost"
-tags        = ["ghost-vm"]
-instance_template_machine_type = "e2-medium"
-
-# Managed Instance Group
-mig_name = "ghost-dev"
-mig_instance_count = 1
-autoscaling_metric = [
-  {name = "compute.googleapis.com/instance/cpu/utilization", target = 0.6, type = "GAUGE"}
-]
-
-*/
