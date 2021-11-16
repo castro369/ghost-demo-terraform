@@ -4,6 +4,22 @@
 export PROJECT_ID=$(gcloud config get-value project)
 export PROJECT_NUMBER=$(gcloud projects list --filter="$(gcloud config get-value project)" --format="value(PROJECT_NUMBER)")
 
+# Enable APIs
+gcloud services enable compute.googleapis.com \
+    servicenetworking.googleapis.com \
+    sqladmin.googleapis.com \
+    iap.googleapis.com \
+    iam.googleapis.com \
+    cloudresourcemanager.googleapis.com \
+    cloudbuild.googleapis.com \
+    monitoring.googleapis.com \
+    compute.googleapis.com \
+    logging.googleapis.com \
+    containerregistry.googleapis.com \
+    vpcaccess.googleapis.com \
+    secretmanager.googleapis.com
+
+
 # Grant permission
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member serviceAccount:"${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
@@ -26,19 +42,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member serviceAccount:"${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
     --role="roles/secretmanager.secretAccessor"
 
-# Enable APIs
-gcloud services enable compute.googleapis.com \
-    servicenetworking.googleapis.com \
-    sqladmin.googleapis.com \
-    iap.googleapis.com \
-    iam.googleapis.com \
-    cloudresourcemanager.googleapis.com \
-    cloudbuild.googleapis.com \
-    monitoring.googleapis.com \
-    compute.googleapis.com \
-    logging.googleapis.com \
-    containerregistry.googleapis.com \
-    vpcaccess.googleapis.com
+# Grant permissions to Cloudbuild SA
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor"
 
 # Create bucket for Terraform state
 gsutil mb -c STANDARD -l EUROPE-WEST1 gs://${PROJECT_ID}-tfstate
@@ -125,6 +132,4 @@ gcloud builds submit --config cloudbuild.yaml .
 #    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
 #    --role="roles/iam.serviceAccountUser"
 
-#gcloud projects add-iam-policy-binding $PROJECT_ID \
-#    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
-#    --role="roles/secretmanager.secretAccessor"
+
