@@ -8,7 +8,7 @@ steps:
         "init",
         "-reconfigure",
         "-backend-config",
-        "bucket=${PROJECT_ID}-terraform-state",
+        "bucket=${PROJECT_ID}-dev-tfstate",
       ]
     secretEnv: ["GOOGLE_CREDENTIALS"]
 

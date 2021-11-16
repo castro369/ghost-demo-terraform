@@ -4,7 +4,7 @@ steps:
     args:
       [
         "cp",
-        "gs://${PROJECT_ID}-terraform-planfiles/planfile-$COMMIT_SHA",
+        "gs://${PROJECT_ID}-dev-terraform-planfiles/planfile-$COMMIT_SHA",
         "planfile",
       ]
     waitFor: ["-"]
@@ -18,7 +18,7 @@ steps:
         "init",
         "-reconfigure",
         "-backend-config",
-        "bucket=${PROJECT_ID}-terraform-state",
+        "bucket=${PROJECT_ID}-dev-tfstate",
       ]
     secretEnv: ["GOOGLE_CREDENTIALS"]
 
