@@ -17,7 +17,8 @@ gcloud services enable compute.googleapis.com \
     logging.googleapis.com \
     containerregistry.googleapis.com \
     vpcaccess.googleapis.com \
-    secretmanager.googleapis.com
+    secretmanager.googleapis.com \
+    run.googleapis.com
 
 
 # Grant permission

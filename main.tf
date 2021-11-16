@@ -13,25 +13,6 @@ module "network" {
   subnets      = var.subnets
 }
 
-# Reserve global internal address range for the peering
-resource "google_compute_global_address" "cloud_sql_private_ip_address" {
-  name          = "sql-ip"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = "20"
-  network       = module.network.network_self_link
-
-  depends_on = [
-    module.network
-  ]
-}
-
-resource "google_service_networking_connection" "cloud_sql_priv_serv_conn" {
-  network                 = module.network.network_self_link
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.cloud_sql_private_ip_address.name]
-}
-
 # Cloud SQL
 module "mysql_db" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
@@ -50,13 +31,17 @@ module "mysql_db" {
   maintenance_window_hour = 2
   encryption_key_name     = null
   maintenance_window_update_track = "stable"
+  enable_default_db = false
+  enable_default_user = true
+  user_name = "root"
+  user_password = "123qwe"
 
   deletion_protection = var.db_deletion_protection
 
   ip_configuration = {
-    ipv4_enabled        = false
+    ipv4_enabled        = true
     require_ssl         = false
-    private_network     = module.network.network_self_link
+    private_network     = null
     authorized_networks = []
   }
 
@@ -69,23 +54,6 @@ module "mysql_db" {
     "start_time" : "02:00",
     "transaction_log_retention_days" : "7"
   }
-
-  additional_databases = [
-    { name = var.db_database_name, charset = "utf8mb4", collation = "utf8mb4_general_ci" }
-  ]
-
-  additional_users = [
-    {
-      name     = var.db_user_name
-      password = var.db_user_password
-      host     = "% (any host)"
-      type     = "BUILT_IN"
-    }
-  ]
-
-  module_depends_on = [
-    google_service_networking_connection.cloud_sql_priv_serv_conn
-  ]
 }
 
 resource "google_sql_database_instance" "mysql_read_replica" {
@@ -107,8 +75,8 @@ resource "google_sql_database_instance" "mysql_read_replica" {
     activation_policy = "ALWAYS"
 
     ip_configuration {
-      ipv4_enabled    = false
-      private_network = module.network.network_self_link
+      ipv4_enabled    = true
+      private_network = null
       require_ssl     = false
     }
 
@@ -124,7 +92,7 @@ resource "google_sql_database_instance" "mysql_read_replica" {
 
   }
 
-  depends_on = [module.mysql_db]
+  depends_on = [module.mysql_db, module.cloud_run]
   lifecycle {
     ignore_changes = [
       settings[0].disk_size,
@@ -142,6 +110,17 @@ resource "google_compute_ssl_certificate" "ssl_certificate" {
 
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+# Network Endpoint Group
+resource "google_compute_region_network_endpoint_group" "serverless_neg" {
+  provider              = google-beta
+  name                  = var.neg_name
+  network_endpoint_type = "SERVERLESS"
+  region                = var.region
+  cloud_run {
+    service = module.cloud_run.service_name
   }
 }
 
@@ -183,30 +162,6 @@ module "lb-http" {
   }
 }
 
-# Network Endpoint Group
-resource "google_compute_region_network_endpoint_group" "serverless_neg" {
-  provider              = google-beta
-  name                  = var.neg_name
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  cloud_run {
-    service = module.cloud_run.service_name
-  }
-}
-
-# Serverless VPC Access Connector
-resource "google_vpc_access_connector" "serverless_connector" {
-  provider       = google-beta
-  name           = var.serverless_connector_name
-  region         = var.region
-  ip_cidr_range  = "10.8.0.0/28"
-  network        = module.network.network_name
-  machine_type   = "e2-standard-4"
-  min_instances  = 2
-  max_instances  = 3
-  max_throughput = 300
-}
-
 # Cloud Run
 module "cloud_run" {
   source       = "GoogleCloudPlatform/cloud-run/google"
@@ -227,9 +182,8 @@ module "cloud_run" {
   template_annotations = {
     "autoscaling.knative.dev/maxScale"        = 100
     "autoscaling.knative.dev/minScale"        = 1
-    "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.serverless_connector.id
     "run.googleapis.com/cloudsql-instances"   = module.mysql_db.instance_connection_name 
-    "run.googleapis.com/execution-environment" = "gen1"
+    "run.googleapis.com/execution-environment" = "gen2"
     "run.googleapis.com/vpc-access-egress"    = "all-traffic" #private-ranges-only
   }
 
@@ -351,7 +305,7 @@ resource "google_secret_manager_secret" "secret_db_user" {
 
 resource "google_secret_manager_secret_version" "secret_version_db_user" {
   secret      = google_secret_manager_secret.secret_db_user.id
-  secret_data = "ghost"
+  secret_data = "root"
 
   lifecycle {
     ignore_changes = all
