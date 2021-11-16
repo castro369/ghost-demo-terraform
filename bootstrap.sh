@@ -83,7 +83,7 @@ gcloud beta builds triggers create github \
 gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
-    --pull-request-pattern=$BRANCH_PATTERN \ 
+    --pull-request-pattern=$BRANCH_PATTERN \
     --build-config=cloudbuild_triggers/tf_pr.yaml \
     --name tf-pr
 
@@ -91,11 +91,12 @@ gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
     --pull-request-pattern=$BRANCH_PATTERN \
-    --require-approval \ 
+    --require-approval \
     --build-config=cloudbuild_triggers/tf_apply.yaml \
     --name tf-apply
 
-
+# Build and push Ghost Image to GCR
+gcloud builds submit --config cloudbuild.yaml .
 
 
 

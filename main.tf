@@ -467,19 +467,6 @@ resource "google_secret_manager_secret_version" "secret_version_service_name" {
   }
 }
 
-# Null Resource to push image to GCR
-resource "null_resource" "docker_build" {
-
-  provisioner "local-exec" {
-    working_dir = path.module
-    command     = "gcloud builds submit --config cloudbuild.yaml ."
-  }
-
-  depends_on = [
-    google_secret_manager_secret_version.secret_version_connection_socket
-  ]
-}
-
 # Cloud Build Trigger CICD
 resource "google_cloudbuild_trigger" "cicd-trigger" {
   name = "cicd-trigger"
