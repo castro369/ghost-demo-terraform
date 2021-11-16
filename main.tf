@@ -296,12 +296,12 @@ module "cloud_run" {
 
 
   depends_on = [
-    google_secret_manager_secret_version.secret_version_connection_socket
-    google_secret_manager_secret_version.secret_version_db_client
-    google_secret_manager_secret_version.secret_version_db_user
-    google_secret_manager_secret_version.secret_version_db_pass
-    google_secret_manager_secret_version.secret_version_db_name
-    google_secret_manager_secret_version.secret_version_connection_socket
+    google_secret_manager_secret_version.secret_version_connection_socket,
+    google_secret_manager_secret_version.secret_version_db_client,
+    google_secret_manager_secret_version.secret_version_db_user,
+    google_secret_manager_secret_version.secret_version_db_pass,
+    google_secret_manager_secret_version.secret_version_db_name,
+    google_secret_manager_secret_version.secret_version_connection_socket,
     google_secret_manager_secret_version.secret_version_url
   ]
 }
