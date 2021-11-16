@@ -4,11 +4,6 @@ variable "project_id" {
   type        = string
 }
 
-variable "backend_prefix" {
-  description = "Backend Prefix"
-  type        = string
-}
-
 variable "region" {
   description = "Project Region"
 }

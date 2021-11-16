@@ -1,7 +1,6 @@
 project_id = "drone-shuttles-ghost-dev"
 region     = "europe-west1"
 zone       = "europe-west1-b"
-backend_prefix = "dev"
 
 # NETWORK SETUP
 network_name = "vpc-network-ghost-dev"

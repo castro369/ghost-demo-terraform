@@ -1,7 +1,7 @@
 terraform {
   backend "gcs" {
     bucket = "${var.project_id}-tfstate"
-    prefix = var.backend_prefix
+    prefix = ""
   }
   required_version = ">= 1.0.10"
 }
