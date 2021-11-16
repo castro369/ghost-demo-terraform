@@ -3,7 +3,7 @@ region     = "europe-west1"
 zone       = "europe-west1-b"
 
 # NETWORK SETUP
-network_name = "vpc-network-ghost-dev"
+network_name = "vpc-network-ghost-last"
 routing_mode = "GLOBAL"
 subnets = [
   {

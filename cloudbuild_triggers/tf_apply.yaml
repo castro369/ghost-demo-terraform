@@ -34,8 +34,7 @@ steps:
     name: hashicorp/terraform:1.0.11
     args: ["apply", "-parallelism", "2", "planfile"]
     timeout: 3600s
-    secretEnv:
-      ["GOOGLE_CREDENTIALS"]
+    secretEnv: ["GOOGLE_CREDENTIALS"]
 
 
 availableSecrets:
