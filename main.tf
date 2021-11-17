@@ -18,41 +18,41 @@ module "mysql_db" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/mysql"
   version = "8.0.0"
 
-  project_id              = var.project_id
-  name                    = "${var.db_name}-${random_id.suffix.hex}"
-  random_instance_name    = false
-  database_version        = var.database_version
-  region                  = var.region
-  zone                    = var.zone
-  tier                    = var.db_tier
-  availability_type       = var.db_availability_type
-  disk_autoresize         = true
-  maintenance_window_day  = 6
-  maintenance_window_hour = 2
-  encryption_key_name     = null
-  maintenance_window_update_track = "stable"
-  enable_default_db = false
-  enable_default_user = true
-  user_name = "root"
-  user_password = "123qwe"
+  project_id                      = var.project_id
+  name                            = "${var.db_name}-${random_id.suffix.hex}"
+  random_instance_name            = var.db_random_instance_name
+  database_version                = var.database_version
+  region                          = var.region
+  zone                            = var.zone
+  tier                            = var.db_tier
+  availability_type               = var.db_availability_type
+  disk_autoresize                 = var.db_disk_autoresize
+  maintenance_window_day          = var.db_maintenance_window_day
+  maintenance_window_hour         = var.db_maintenance_window_hour
+  encryption_key_name             = var.db_encryption_key_name
+  maintenance_window_update_track = var.db_maintenance_window_update_track
+  enable_default_db               = var.enable_default_db
+  enable_default_user             = var.db_enable_default_user
+  user_name                       = var.db_user_name
+  user_password                   = var.db_user_password
 
   deletion_protection = var.db_deletion_protection
 
   ip_configuration = {
-    ipv4_enabled        = true
-    require_ssl         = false
-    private_network     = null
-    authorized_networks = []
+    ipv4_enabled        = var.db_ipv4_enabled
+    require_ssl         = var.db_require_ssl
+    private_network     = var.db_private_network
+    authorized_networks = var.db_authorized_networks
   }
 
   backup_configuration = {
-    "binary_log_enabled" : true,
-    "enabled" : true,
-    "location" : "eu",
-    "retained_backups" : 365,
-    "retention_unit" : "COUNT",
-    "start_time" : "02:00",
-    "transaction_log_retention_days" : "7"
+    "binary_log_enabled" : var.db_backup_binary_log_enabled,
+    "enabled" : var.db_backup_enabled,
+    "location" : var.db_backup_location,
+    "retained_backups" : var.db_retained_backups,
+    "retention_unit" : var.db_backup_retention_unit,
+    "start_time" : var.db_backup_start_time,
+    "transaction_log_retention_days" : var.db_backup_transaction_log_retention_days
   }
 }
 
@@ -63,33 +63,32 @@ resource "google_sql_database_instance" "mysql_read_replica" {
   database_version     = var.database_version
   region               = var.region
   master_instance_name = module.mysql_db.instance_name
-  deletion_protection  = var.db_deletion_protection
-  encryption_key_name  = null
+  deletion_protection  = var.read_replica_deletion_protection
+  encryption_key_name  = var.db_encryption_key_name
 
   replica_configuration {
-    failover_target = false
+    failover_target = var.read_replica_failover_target
   }
 
   settings {
-    tier              = var.db_tier
-    activation_policy = "ALWAYS"
+    tier              = var.read_replica_tier
+    activation_policy = var.read_replica_activation_policy
 
     ip_configuration {
-      ipv4_enabled    = true
-      private_network = null
-      require_ssl     = false
+      ipv4_enabled    = var.db_ipv4_enabled
+      private_network = var.db_private_network
+      require_ssl     = var.db_require_ssl
     }
 
-    disk_autoresize = true
-    disk_size       = "10"
-    disk_type       = "PD_SSD"
-    pricing_plan    = "PER_USE"
-    user_labels     = null
+    disk_autoresize = var.db_disk_autoresize
+    disk_size       = var.read_replica_disk_size
+    disk_type       = var.read_replica_disk_type
+    pricing_plan    = var.read_replica_pricing_plan
+    user_labels     = var.read_replica_user_labels
 
     location_preference {
-      zone = var.zone
+      zone = var.read_replica_zone
     }
-
   }
 
   depends_on = [module.mysql_db, module.cloud_run]
@@ -117,7 +116,7 @@ resource "google_compute_ssl_certificate" "ssl_certificate" {
 resource "google_compute_region_network_endpoint_group" "serverless_neg" {
   provider              = google-beta
   name                  = var.neg_name
-  network_endpoint_type = "SERVERLESS"
+  network_endpoint_type = var.network_endpoint_type
   region                = var.region
   cloud_run {
     service = module.cloud_run.service_name
@@ -128,13 +127,13 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
 module "lb-http" {
   source  = "GoogleCloudPlatform/lb-http/google//modules/serverless_negs"
   version = "6.1.1"
-  name    = "lb-https"
+  name    = var.lb_name
   project = var.project_id
 
   ssl                  = var.ssl
   https_redirect       = var.ssl
   ssl_certificates     = [google_compute_ssl_certificate.ssl_certificate.self_link]
-  use_ssl_certificates = true
+  use_ssl_certificates = var.use_ssl_certificates
 
   backends = {
     default = {
@@ -144,10 +143,10 @@ module "lb-http" {
           group = google_compute_region_network_endpoint_group.serverless_neg.id
         }
       ]
-      enable_cdn              = false
-      security_policy         = null
-      custom_request_headers  = null
-      custom_response_headers = null
+      enable_cdn              = var.enable_cdn
+      security_policy         = var.security_policy
+      custom_request_headers  = var.custom_request_headers
+      custom_response_headers = var.custom_response_headers
 
       iap_config = {
         enable               = false
@@ -164,31 +163,28 @@ module "lb-http" {
 
 # Cloud Run
 module "cloud_run" {
-  source       = "GoogleCloudPlatform/cloud-run/google"
-  version      = "0.1.1"
-  service_name = var.cloud_run_service_name
-  project_id   = var.project_id
-  location     = var.region
-  image        = "gcr.io/${var.project_id}/${var.cloud_run_image}"
-  container_concurrency  = 80
+  source                = "GoogleCloudPlatform/cloud-run/google"
+  version               = "0.1.1"
+  service_name          = var.cloud_run_service_name
+  project_id            = var.project_id
+  location              = var.region
+  image                 = "gcr.io/${var.project_id}/${var.cloud_run_image}"
+  container_concurrency = var.container_concurrency
 
-  members = ["allUsers"]
+  members = var.cloud_run_members
 
-  ports = {
-    "name" : "http1",
-    "port" : 2368
-  }
+  ports = var.cloud_run_ports
 
   template_annotations = {
-    "autoscaling.knative.dev/maxScale"        = 100
-    "autoscaling.knative.dev/minScale"        = 1
-    "run.googleapis.com/cloudsql-instances"   = module.mysql_db.instance_connection_name 
-    "run.googleapis.com/execution-environment" = "gen1"
+    "autoscaling.knative.dev/maxScale"         = var.cloud_run_maxScale
+    "autoscaling.knative.dev/minScale"         = var.cloud_run_minScale
+    "run.googleapis.com/cloudsql-instances"    = module.mysql_db.instance_connection_name
+    "run.googleapis.com/execution-environment" = var.cloud_run_execution_environment
   }
 
   limits = {
-    cpu    = "1000m"
-    memory = "512Mi"
+    cpu    = var.cloud_run_cpu
+    memory = var.cloud_run_memory
   }
 
   env_secret_vars = [
@@ -196,7 +192,7 @@ module "cloud_run" {
       name = "database__client"
       value_from = [{
         secret_key_ref = {
-          key = "latest"
+          key  = "latest"
           name = "DB_CLIENT"
         }
       }]
@@ -205,7 +201,7 @@ module "cloud_run" {
       name = "database__connection__user"
       value_from = [{
         secret_key_ref = {
-          key = "latest"
+          key  = "latest"
           name = "DB_USER"
         }
       }]
@@ -214,7 +210,7 @@ module "cloud_run" {
       name = "database__connection__password"
       value_from = [{
         secret_key_ref = {
-          key = "latest"
+          key  = "latest"
           name = "DB_PASS"
         }
       }]
@@ -248,7 +244,6 @@ module "cloud_run" {
     }
   ]
 
-
   depends_on = [
     google_secret_manager_secret_version.secret_version_connection_socket,
     google_secret_manager_secret_version.secret_version_db_client,
@@ -263,7 +258,7 @@ module "cloud_run" {
 # Secret Manager
 resource "google_secret_manager_secret" "secret_db_client" {
   project   = var.project_id
-  secret_id = "DB_CLIENT"
+  secret_id = var.secret_db_client
 
   replication {
     automatic = true
@@ -277,7 +272,7 @@ resource "google_secret_manager_secret" "secret_db_client" {
 
 resource "google_secret_manager_secret_version" "secret_version_db_client" {
   secret      = google_secret_manager_secret.secret_db_client.id
-  secret_data = "mysql"
+  secret_data = var.secret_db_client_data
 
   lifecycle {
     ignore_changes = all
@@ -290,7 +285,7 @@ resource "google_secret_manager_secret_version" "secret_version_db_client" {
 
 resource "google_secret_manager_secret" "secret_db_user" {
   project   = var.project_id
-  secret_id = "DB_USER"
+  secret_id = var.secret_db_user
 
   replication {
     automatic = true
@@ -304,7 +299,7 @@ resource "google_secret_manager_secret" "secret_db_user" {
 
 resource "google_secret_manager_secret_version" "secret_version_db_user" {
   secret      = google_secret_manager_secret.secret_db_user.id
-  secret_data = "root"
+  secret_data = var.secret_db_user_data
 
   lifecycle {
     ignore_changes = all
@@ -313,7 +308,7 @@ resource "google_secret_manager_secret_version" "secret_version_db_user" {
 
 resource "google_secret_manager_secret" "secret_db_pass" {
   project   = var.project_id
-  secret_id = "DB_PASS"
+  secret_id = var.secret_db_pass
 
   replication {
     automatic = true
@@ -327,7 +322,7 @@ resource "google_secret_manager_secret" "secret_db_pass" {
 
 resource "google_secret_manager_secret_version" "secret_version_db_pass" {
   secret      = google_secret_manager_secret.secret_db_pass.id
-  secret_data = "123qwe"
+  secret_data = var.secret_db_pass_data
 
   lifecycle {
     ignore_changes = all
@@ -336,7 +331,7 @@ resource "google_secret_manager_secret_version" "secret_version_db_pass" {
 
 resource "google_secret_manager_secret" "secret_db_name" {
   project   = var.project_id
-  secret_id = "DB_NAME"
+  secret_id = var.secret_db_name
 
   replication {
     automatic = true
@@ -350,7 +345,7 @@ resource "google_secret_manager_secret" "secret_db_name" {
 
 resource "google_secret_manager_secret_version" "secret_version_db_name" {
   secret      = google_secret_manager_secret.secret_db_name.id
-  secret_data = "ghost"
+  secret_data = var.secret_db_name_data
 
   lifecycle {
     ignore_changes = all
@@ -361,7 +356,7 @@ resource "google_secret_manager_secret_version" "secret_version_db_name" {
 
 resource "google_secret_manager_secret" "secret_connection_socket" {
   project   = var.project_id
-  secret_id = "DB_CON"
+  secret_id = var.secret_connection_socket
 
   replication {
     automatic = true
@@ -398,7 +393,7 @@ resource "google_secret_manager_secret" "secret_url" {
 
 resource "google_secret_manager_secret_version" "secret_version_url" {
   secret      = google_secret_manager_secret.secret_url.id
-  secret_data = "http://localhost:2368"
+  secret_data = var.secret_url_data
 
   lifecycle {
     ignore_changes = all
@@ -430,16 +425,16 @@ resource "google_secret_manager_secret_version" "secret_version_service_name" {
 
 # Cloud Build Trigger CICD
 resource "google_cloudbuild_trigger" "cicd-trigger" {
-  name = "cicd-trigger"
+  name    = var.trigger_name
   project = var.project_id
 
   github {
-    owner = "antoniocauk"
-    name = "ghost-demo-cicd"
+    owner = var.github_owner
+    name  = var.github_name
     pull_request {
-      branch = "^main$"
-      comment_control = "COMMENTS_ENABLED"
+      branch          = var.github_branch
+      comment_control = var.github_comment_control
     }
   }
-  filename = "cloudbuild.yaml"
+  filename = var.trigger_filename
 }
