@@ -52,7 +52,7 @@ db_backup_transaction_log_retention_days = "7"
 
 # Read Replica
 read_replica_deletion_protection = true
-read_replica_failover_target     = true
+read_replica_failover_target     = false
 read_replica_tier                = "db-n1-standard-1"
 read_replica_activation_policy   = "ALWAYS"
 read_replica_disk_size           = "10"

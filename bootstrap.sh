@@ -124,7 +124,7 @@ gcloud beta builds triggers create github \
 gcloud beta builds triggers create github \
     --repo-name=$REPO_NAME \
     --repo-owner=$REPO_OWNER \
-    --pull-request-pattern=$BRANCH_PATTERN \
+    --branch-pattern=$BRANCH_PATTERN \
     --require-approval \
     --build-config=cloudbuild_triggers/tf_apply.yaml \
     --name tf-apply
