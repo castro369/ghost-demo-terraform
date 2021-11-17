@@ -5,6 +5,13 @@ The Ghost version used is 3.42 from the Docker Hub Page -> https://hub.docker.co
 The automated deployment is achieved by using a bash script to enable all the deependencies needed in the GCP Project and the main Infrastructure is deployed using Terraform.  
 The Pipelines run in Cloud Build, this is why there will be no need to install Terraform locally.  
 
+## Assumptions
+- The changes done to the application at code base should only be deployed through the pipeline.
+- No manual changes to the infrastructure, should be reflected in Terraform code
+
+## Architecture
+![alt text](Architecture_Ghost_Demo.png "Ghost Architecture")
+
 
 ## Requirements
 - Google Cloud SDK
