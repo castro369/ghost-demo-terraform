@@ -1,5 +1,5 @@
 # Global
-project_id = "my-new-332320"
+project_id = "drone-shuttles-demo"
 region     = "europe-west1"
 zone       = "europe-west1-b"
 
