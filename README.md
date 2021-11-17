@@ -38,6 +38,7 @@ chmod +x ./bootstrap.sh
 
 ### Run Terraform
 The Terraform Cloud Build triggers can be found in the Triggers page -> https://console.cloud.google.com/cloud-build/triggers?  
+Change the Destroy trigger to be manually triggered (Manual Invocation).  
 
 The Terraform code will create the following resources:
 - Networks and Subnetworks
