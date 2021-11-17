@@ -1,31 +1,45 @@
 # ghost-demo
 
+This repo holds the files needed to deploy Ghost automatically.  
+The Ghost version used is 3.42 from the Docker Hub Page -> https://hub.docker.com/_/ghost/  
+The automated deployment is achieved by using a bash script to enable all the deependencies needed in the GCP Project and the main Infrastructure is deployed using Terraform.  
+The Pipelines run in Cloud Build, this is why there will be no need to install Terraform locally.  
+
+
 ## Requirements
 - Google Cloud SDK
 - Google Cloud Project
-- Google Authentication to Project 
-- Terraform installed on local machine
-- GitHub Account and two Repositories
+- Google Login within SDK and configuration to Project 
+- GitHub Account ( 2 Repositories )
 
-Connect both Terraform and CI/CD repos https://console.cloud.google.com/cloud-build/repos?  
+## Procedure
+Once the requirements mentioned above are met, the repositories can be linked to the GCP Project.   
+Connect both Terraform and CI/CD repos -> https://console.cloud.google.com/cloud-build/repos?  
 
-
-## Assign ENV variables
-export REPO_NAME=(Name of Terraform GitHub Repo) - (E.g. ghost-demo-terraform)
-export REPO_OWNER=(Name of Repo Owner) - (E.g. antoniocauk)
-export BRANCH_PATTERN=(Pattern of branch) - (E.g. ^main$)
-
-
-## Clone the repository
+### Clone the repository  
+```
 git clone https://github.com/antoniocauk/ghost-demo-terraform.git
+```
 
-## Push code into your own repo
 
-## Run Bootstrap
+### Assign ENV variables (Needed for bootstrap)
+```
+export REPO_NAME=<Name of Terraform GitHub Repo> - (E.g. ghost-demo-terraform)  
+export REPO_OWNER=<Name of Repo Owner> - (E.g. antoniocauk)  
+export BRANCH_PATTERN=<Pattern of branch> - (E.g. ^main$)  
+```
+
+### Run Bootstrap
+Run "bootstrap.sh" to create the terraform service account and its JSON key. Enable Terraform required APIs and create Terraform triggers.   
+```
 chmod +x ./bootstrap.sh
-Run "bootstrap.sh" to create terraform service account and its JSON key. Enable needed APIs for Terraform to function. 
+./bootstrap.sh
+```
 
-## Run Terraform
+### Run Terraform
+The Terraform Cloud Build triggers can be found in the Triggers page -> https://console.cloud.google.com/cloud-build/triggers?  
+Change the Destroy trigger to be manually triggered (Manual Invocation).  
+
 The Terraform code will create the following resources:
 - Networks and Subnetworks
 - Cloud SQL
@@ -35,45 +49,27 @@ The Terraform code will create the following resources:
 - Load Balancer
 - Cloud Build Triggers
 
-When the terraform finishes, the cloud build triggers can be found in the CLoud Build page. These were created to be triggered on Pull Requests.
 
-https://console.cloud.google.com/cloud-build/triggers?
+### Push code into your own repo
+Change the terraform.auto.tfvars values to fit your environment (project_id is the most important).
+Once the changes are done, push the code into your repository
 
+## CI/CD
+To implement the CI/CD follow the steps here -> https://github.com/antoniocauk/ghost-demo-cicd
 
-## Helpful commands while building the Ghost Image If you wish to run the code locally 
-### Build Image Locally and push to Google Container Registry 
-gcloud builds submit --config cloudbuild.yaml .
-
-## Run Docker container locally and connect to external MySQL instance
-docker build -t ghost --build-arg DB_HOST=$DB_HOST --build-arg DB_PORT=$DB_PORT --build-arg DB_USER=$DB_USER --build-arg DB_PASS=$DB_PASS --build-arg DB_NAME=$DB_NAME .  
 
 ## Extra Info
-All the values found in Secret Manager are default and should be cahnged and adjusted to each environment. The same applies to the .tfvars file in the terraform folder.
+Sensitive data is saved in Secret Manager with default values, this data can be altered to fit your environment.
 
 
+### Helpful commands to run the code locally 
+While trying out the application and checking the different types of deployments I found these commands to be helpful:  
+- Build image locally and push it to Google Container Registry
+```
+gcloud builds submit --config cloudbuild.yaml .
+```  
 
-
-
-
-database__client
-mysql
-database__connection__user
-ghost
-database__connection__password
-123qwe
-database__connection__database
-ghost
-database__connection__socketPath
-/cloudsql/drone-shuttles-ghost-dev:europe-west1:ghost-db-18a5f692
-url
-http://localhost:2368
-
-
-
-
-DB_CLIENT
-DB_USER
-DB_PASS
-DB_NAME
-DB_CON
-URL
+- Run Docker container locally and connect to external MySQL instance
+```
+docker build -t ghost --build-arg DB_HOST=$DB_HOST --build-arg DB_PORT=$DB_PORT --build-arg DB_USER=$DB_USER --build-arg DB_PASS=$DB_PASS --build-arg DB_NAME=$DB_NAME .  
+```
