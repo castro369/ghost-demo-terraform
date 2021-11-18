@@ -122,3 +122,7 @@ github_name            = "ghost-demo-cicd"
 github_branch          = "^main$"
 github_comment_control = "COMMENTS_ENABLED"
 trigger_filename       = "cloudbuild.yaml"
+
+
+
+var.bucket_name = "deletefunctionghost"

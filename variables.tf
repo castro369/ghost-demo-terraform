@@ -237,3 +237,8 @@ variable "github_comment_control" {
 variable "trigger_filename" {
   description = "Trigger Filename"
 }
+
+
+variable "bucket_name" {
+  description = "Bucket name "
+}
