@@ -244,10 +244,6 @@ variable "bucket_name" {
   description = "Bucket name"
 }
 
-variable "bucket_name" {
-  description = "Bucket name"
-}
-
 variable "bucket_location" {
   description = "Bucket Location"
 }
@@ -256,6 +252,7 @@ variable "bucket_force_destroy" {
   description = "Bucket Force Destroy"
 }
 
+# Cloud Function
 variable "cf_name" {
   description = "Cloud Function name "
 }
@@ -284,6 +281,7 @@ variable "cf_sa_name" {
   description = "Service Account Cloud Function Name"
 }
 
+# Cloud Scheduler
 variable "scheduler_name" {
   description = "Cloud Scheduler Name"
 }
