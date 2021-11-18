@@ -125,4 +125,4 @@ trigger_filename       = "cloudbuild.yaml"
 
 
 
-var.bucket_name = "deletefunctionghost"
+bucket_name = "deletefunctionghost"
