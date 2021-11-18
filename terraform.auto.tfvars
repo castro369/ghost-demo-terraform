@@ -123,6 +123,23 @@ github_branch          = "^main$"
 github_comment_control = "COMMENTS_ENABLED"
 trigger_filename       = "cloudbuild.yaml"
 
-
-
+# Bucket
 bucket_name = "deletefunctionghost"
+bucket_location = "EU"
+bucket_force_destroy = true
+
+# Cloud Function
+cf_name = "delete_posts"
+cf_description = "A function in python that will delete all the posts from ghost database."
+cf_runtime = "python39"
+cf_available_memory_mb = 256
+cf_entrypoint = "delete"
+
+cf_sa_id = "cloud-function-sa"
+cf_sa_name = "Cloud Function"
+
+# Cloud Scheduler
+scheduler_name = "delete_posts"
+scheduler_description = "Scheduler to call the Cloud Functions"
+scheduler_schedule = "0 0 1 1 *"
+scheduler_time_zone = "Europe/London"
