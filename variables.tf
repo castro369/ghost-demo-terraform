@@ -212,6 +212,7 @@ variable "secret_db_name_data" {}
 variable "secret_connection_socket" {}
 variable "secret_url" {}
 variable "secret_url_data" {}
+variable "secret_service_name" {}
 
 # Cloud Build Trigger
 variable "trigger_name" {

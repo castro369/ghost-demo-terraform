@@ -494,15 +494,15 @@ resource "google_cloudfunctions_function" "delete_posts_function" {
   entry_point           = "delete"
 
   environment_variables = {
-    var.secret_db_name = data.google_secret_manager_secret_version.data_secret_db_name.secret_data
-    var.secret_db_user = data.google_secret_manager_secret_version.data_secret_db_pass.secret_data
-    var.secret_db_pass = data.google_secret_manager_secret_version.data_secret_db_user.secret_data
+    DB_NAME = data.google_secret_manager_secret_version.data_secret_db_name.secret_data
+    DB_USER = data.google_secret_manager_secret_version.data_secret_db_pass.secret_data
+    DB_PASS = data.google_secret_manager_secret_version.data_secret_db_user.secret_data
   }
 }
 
 # Create service account for Cloud Function
 resource "google_service_account" "cf_service_account" {
-  account_id   = "cloud_function_sa"
+  account_id   = "cloud-function-sa"
   display_name = "Cloud Function"
 }
 
