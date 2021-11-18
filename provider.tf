@@ -8,7 +8,7 @@ terraform {
 
 provider "google" {
   project = var.project_id
-  reigon = var.region
+  region = var.region
   zone = var.zone
   #credentials = file("./terraform-sa.json")
 }
