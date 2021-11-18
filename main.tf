@@ -495,8 +495,8 @@ resource "google_cloudfunctions_function" "delete_posts_function" {
 
   environment_variables = {
     DB_NAME = data.google_secret_manager_secret_version.data_secret_db_name.secret_data
-    DB_USER = data.google_secret_manager_secret_version.data_secret_db_pass.secret_data
-    DB_PASS = data.google_secret_manager_secret_version.data_secret_db_user.secret_data
+    DB_USER = data.google_secret_manager_secret_version.data_secret_db_user.secret_data
+    DB_PASS = data.google_secret_manager_secret_version.data_secret_db_pass.secret_data
   }
 }
 
