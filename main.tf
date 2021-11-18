@@ -379,7 +379,7 @@ resource "google_secret_manager_secret_version" "secret_version_connection_socke
 
 resource "google_secret_manager_secret" "secret_url" {
   project   = var.project_id
-  secret_id = "URL"
+  secret_id = var.secret_url
 
   replication {
     automatic = true
@@ -402,7 +402,7 @@ resource "google_secret_manager_secret_version" "secret_version_url" {
 
 resource "google_secret_manager_secret" "secret_service_name" {
   project   = var.project_id
-  secret_id = "SERVICE_NAME"
+  secret_id = var.secret_service_name
 
   replication {
     automatic = true
@@ -437,4 +437,99 @@ resource "google_cloudbuild_trigger" "cicd-trigger" {
     }
   }
   filename = var.trigger_filename
+}
+
+
+# Consuming secrets
+data "google_secret_manager_secret_version" "data_secret_db_name" {
+  provider = google-beta
+  secret   = var.secret_db_name
+}
+
+data "google_secret_manager_secret_version" "data_secret_db_pass" {
+  provider = google-beta
+  secret   = var.secret_db_pass
+}
+
+data "google_secret_manager_secret_version" "data_secret_db_user" {
+  provider = google-beta
+  secret   = var.secret_db_user
+}
+
+
+# Create Bucket for Function code
+resource "google_storage_bucket" "bucket" {
+  name          = var.bucket_name
+  location      = "EU"
+  force_destroy = true
+
+  lifecycle_rule {
+    condition {
+      age = 3
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
+
+resource "google_storage_bucket_object" "zip_file" {
+  name   = "function.zip"
+  source = "function.zip"
+  bucket = google_storage_bucket.bucket.name
+}
+
+# Add Cloud Funtion
+resource "google_cloudfunctions_function" "delete_posts_function" {
+  name        = "delete_posts"
+  description = "A function in python that will delete all the posts from ghost database."
+  runtime     = "python39"
+
+  available_memory_mb   = 256
+  source_archive_bucket = google_storage_bucket.bucket.name
+  source_archive_object = google_storage_bucket_object.zip_file.name
+
+  trigger_http          = true
+  timeout               = 60
+  entry_point           = "delete"
+
+  environment_variables = {
+    DB_NAME = data.google_secret_manager_secret_version.data_secret_db_name.secret_data
+    DB_USER = data.google_secret_manager_secret_version.data_secret_db_pass.secret_data
+    DB_PASS = data.google_secret_manager_secret_version.data_secret_db_user.secret_data
+  }
+}
+
+# Create service account for Cloud Function
+resource "google_service_account" "cf_service_account" {
+  account_id   = "cloud-function-sa"
+  display_name = "Cloud Function"
+}
+
+# IAM entry for a single user to invoke the function
+resource "google_cloudfunctions_function_iam_member" "invoker" {
+  project        = var.project_id
+  region         = var.region
+  cloud_function = google_cloudfunctions_function.delete_posts_function.name
+
+  role   = "roles/cloudfunctions.invoker"
+  member = "serviceAccount:${google_service_account.cf_service_account.email}"
+}
+
+# Add Cloud Scheduler
+resource "google_cloud_scheduler_job" "scheduler_job" {
+  name             = "delete_posts"
+  description      = "Scheduler to call the Cloud Functions"
+  schedule         = "*/8 * * * *"
+  time_zone        = "Europe/London"
+  attempt_deadline = "320s"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloudfunctions_function.delete_posts_function.https_trigger_url
+
+    oidc_token {
+      service_account_email = google_service_account.cf_service_account.email
+    }
+  }
 }

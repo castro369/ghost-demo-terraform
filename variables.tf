@@ -212,6 +212,7 @@ variable "secret_db_name_data" {}
 variable "secret_connection_socket" {}
 variable "secret_url" {}
 variable "secret_url_data" {}
+variable "secret_service_name" {}
 
 # Cloud Build Trigger
 variable "trigger_name" {
@@ -236,4 +237,9 @@ variable "github_comment_control" {
 
 variable "trigger_filename" {
   description = "Trigger Filename"
+}
+
+
+variable "bucket_name" {
+  description = "Bucket name "
 }
