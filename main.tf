@@ -502,7 +502,7 @@ resource "google_cloudfunctions_function" "delete_posts_function" {
 
 # Create service account for Cloud Function
 resource "google_service_account" "cf_service_account" {
-  account_id   = var.cf_sa
+  account_id   = var.cf_sa_id
   display_name = var.cf_sa_name
 }
 
