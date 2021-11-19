@@ -65,6 +65,14 @@ Once the changes are done, push the code into your repository
 To implement the CI/CD follow the steps here -> https://github.com/antoniocauk/ghost-demo-cicd
 
 
+# Cloud Function to Delete Posts
+A Cloud function was created to connect to the Cloud SQL Database and delete the values of the posts' related tables. This Function can only be invoked by users with permissions, or by using the Cloud Scheduler which has permissions to run it. 
+The function was built with python 3.9.
+The function uses the secrets from secret manager as source of sensitive data.
+The code for the function is pushed into a bucket in a zip file.
+
+** After deploying the Function with Terraform, the Cloud Scheduler invoker should be modified to be disabled (paused) so it does not trigger automatically, it can always be triggered manually.**
+
 ## Extra Info
 Sensitive data is saved in Secret Manager with default values, this data can be altered to fit your environment.
 

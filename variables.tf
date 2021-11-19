@@ -239,7 +239,61 @@ variable "trigger_filename" {
   description = "Trigger Filename"
 }
 
-
+# Bucket
 variable "bucket_name" {
-  description = "Bucket name "
+  description = "Bucket name"
+}
+
+variable "bucket_location" {
+  description = "Bucket Location"
+}
+
+variable "bucket_force_destroy" {
+  description = "Bucket Force Destroy"
+}
+
+# Cloud Function
+variable "cf_name" {
+  description = "Cloud Function name "
+}
+
+variable "cf_description" {
+  description = "Cloud Function Description"
+}
+
+variable "cf_runtime" {
+  description = "Cloud Function runtime"
+}
+
+variable "cf_available_memory_mb" {
+  description = "Cloud Function available memory"
+}
+
+variable "cf_entrypoint" {
+  description = "Cloud Function entrypoint"
+}
+
+variable "cf_sa_id" {
+  description = "Service Account Cloud Function"
+}
+
+variable "cf_sa_name" {
+  description = "Service Account Cloud Function Name"
+}
+
+# Cloud Scheduler
+variable "scheduler_name" {
+  description = "Cloud Scheduler Name"
+}
+
+variable "scheduler_description" {
+  description = "Cloud Scheduler Description"
+}
+
+variable "scheduler_schedule" {
+  description = "Cloud Scheduler Schedule"
+}
+
+variable "scheduler_time_zone" {
+  description = "Cloud Scheduler Time Zone"
 }

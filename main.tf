@@ -460,8 +460,8 @@ data "google_secret_manager_secret_version" "data_secret_db_user" {
 # Create Bucket for Function code
 resource "google_storage_bucket" "bucket" {
   name          = var.bucket_name
-  location      = "EU"
-  force_destroy = true
+  location      = var.bucket_location
+  force_destroy = var.bucket_force_destroy
 
   lifecycle_rule {
     condition {
@@ -479,19 +479,19 @@ resource "google_storage_bucket_object" "zip_file" {
   bucket = google_storage_bucket.bucket.name
 }
 
-# Add Cloud Funtion
+# Cloud Funtion
 resource "google_cloudfunctions_function" "delete_posts_function" {
-  name        = "delete_posts"
-  description = "A function in python that will delete all the posts from ghost database."
-  runtime     = "python39"
+  name        = var.cf_name
+  description = var.cf_description
+  runtime     = var.cf_runtime
 
-  available_memory_mb   = 256
+  available_memory_mb   = var.cf_available_memory_mb
   source_archive_bucket = google_storage_bucket.bucket.name
   source_archive_object = google_storage_bucket_object.zip_file.name
 
   trigger_http          = true
   timeout               = 60
-  entry_point           = "delete"
+  entry_point           = var.cf_entrypoint
 
   environment_variables = {
     DB_NAME = data.google_secret_manager_secret_version.data_secret_db_name.secret_data
@@ -502,8 +502,8 @@ resource "google_cloudfunctions_function" "delete_posts_function" {
 
 # Create service account for Cloud Function
 resource "google_service_account" "cf_service_account" {
-  account_id   = "cloud-function-sa"
-  display_name = "Cloud Function"
+  account_id   = var.cf_sa
+  display_name = var.cf_sa_name
 }
 
 # IAM entry for a single user to invoke the function
@@ -518,10 +518,10 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 
 # Add Cloud Scheduler
 resource "google_cloud_scheduler_job" "scheduler_job" {
-  name             = "delete_posts"
-  description      = "Scheduler to call the Cloud Functions"
-  schedule         = "*/8 * * * *"
-  time_zone        = "Europe/London"
+  name             = var.scheduler_name
+  description      = var.scheduler_description
+  schedule         = var.scheduler_schedule
+  time_zone        = var.scheduler_time_zone
   attempt_deadline = "320s"
 
   http_target {
